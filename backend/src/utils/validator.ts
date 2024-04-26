@@ -19,11 +19,15 @@ export const validate = (validations: ValidationChain[]) => {
   };
 };
 
-export const signUpValidator = [
-  body("username").notEmpty().withMessage("Username cannot be empty"),
+export const loginValidator = [
   body("email").trim().isEmail().withMessage("Please provide a valid email"),
   body("password")
     .trim()
     .isLength({ min: 6 })
     .withMessage("Password must contain atleast 6 characters"),
+];
+
+export const signUpValidator = [
+  body("username").notEmpty().withMessage("Username cannot be empty"),
+  ...loginValidator,
 ];

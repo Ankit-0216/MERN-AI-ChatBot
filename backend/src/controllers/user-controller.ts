@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import User from "../models/User.js";
-import { hash } from "bcrypt";
+import { hash, compare } from "bcrypt";
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -22,7 +22,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
     console.log("Erron in getAllUsers", error);
     return res.status(500).json({
       success: false,
-      message: "Unable to get all users.",
+      message: "Unable to get all users",
       error: error.message,
     });
   }
@@ -32,14 +32,12 @@ export const userSignUp = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
 
-    const existingUser = await User.find({ email });
+    const existingUser = await User.findOne({ email });
 
-    console.log("existing User", existingUser);
-
-    if (existingUser.length !== 0) {
-      return res.status(500).json({
+    if (existingUser) {
+      return res.status(401).json({
         success: false,
-        message: "User already exist.",
+        message: "User already exist",
       });
     }
 
@@ -53,14 +51,53 @@ export const userSignUp = async (req: Request, res: Response) => {
 
     return res.status(201).json({
       success: true,
-      message: "User created Successfully.",
-      id: user._id,
+      message: "User created Successfully",
+      id: user._id.toString(),
     });
   } catch (error) {
     console.log("Error while signing up", error);
     return res.status(500).json({
       success: false,
       message: "User cannot be created",
+      error: error.message,
+    });
+  }
+};
+
+export const userLogin = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User Not Registered",
+      });
+    }
+
+    const isPasswordCorrect = await compare(password, user.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(403).json({
+        success: true,
+        message: "Incorrect Password",
+      });
+    }
+
+    console.log(user._id.toString());
+
+    return res.status(200).json({
+      success: true,
+      message: "User logged in Successfully",
+      id: user._id.toString(),
+    });
+  } catch (error) {
+    console.log("Error while logging in", error);
+    return res.status(500).json({
+      success: false,
+      message: "User couldn't be logged in",
       error: error.message,
     });
   }
