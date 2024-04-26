@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import User from "../models/User.js";
 import { hash, compare } from "bcrypt";
+import { createToken } from "../utils/token-manager.js";
+import { COOKIE_NAME } from "../utils/constants.js";
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
@@ -49,6 +51,26 @@ export const userSignUp = async (req: Request, res: Response) => {
       password: hashedPassword,
     });
 
+    res.clearCookie(COOKIE_NAME, {
+      path: "/",
+      domain: "localhost",
+      httpOnly: true,
+      signed: true,
+    });
+
+    const token = createToken(user.id.toString(), user.email, "7d");
+
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 7);
+
+    res.cookie(COOKIE_NAME, token, {
+      path: "/",
+      domain: "localhost",
+      expires,
+      httpOnly: true,
+      signed: true,
+    });
+
     return res.status(201).json({
       success: true,
       message: "User created Successfully",
@@ -86,7 +108,25 @@ export const userLogin = async (req: Request, res: Response) => {
       });
     }
 
-    console.log(user._id.toString());
+    res.clearCookie(COOKIE_NAME, {
+      path: "/",
+      domain: "localhost",
+      httpOnly: true,
+      signed: true,
+    });
+
+    const token = createToken(user.id.toString(), user.email, "7d");
+
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 7);
+
+    res.cookie(COOKIE_NAME, token, {
+      path: "/",
+      domain: "localhost",
+      expires,
+      httpOnly: true,
+      signed: true,
+    });
 
     return res.status(200).json({
       success: true,
