@@ -1,0 +1,13 @@
+@import url("https://fonts.googleapis.com/css2?family=Concert+One&family=Jersey+10&display=swap");
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #05101c;
+  color: white;
+  font-family: "Concert One", sans-serif;
+}
+
+.image-inverted {
+  filter: invert(100%);
+}
